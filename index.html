@@ -4,50 +4,11 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="/node_modules/zero-md/dist/zero-md.min.js"></script>
     <title>Vite App</title>
   </head>
   <body>
     <div id="app"></div>
-    <zero-md>
-      <script type="text/markdown">
-        下面是一个简单的防抖函数代码示例：
-        
-        ```javascript
-        function debounce(callback, delay) {
-          let timer = null;
-          return function() {
-            const args = arguments;
-            if (timer) {
-              clearTimeout(timer);
-            }
-            timer = setTimeout(() => {
-              callback.apply(this, args);
-              timer = null;
-            }, delay);
-          }
-        }
-        ```
-        
-        这个函数接受两个参数，第一个是需要防抖的回调函数，第二个是防抖的延迟时间。当函数被调用时，它会启动一个定时器来延迟执行回调函数，如果在延迟时间内再次调用了函数，则会取消上一个定时器，重新开始计时。
-        
-        使用方法示例：
-        
-        ```javascript
-        function hello(name) {
-          console.log("Hello, " + name);
-        }
-        
-        const debouncedHello = debounce(hello, 1000);
-        
-        debouncedHello("Alice"); // 等待 1000ms 执行
-        debouncedHello("Bob");   // 取消上一个定时器，重新计时 1000ms，再次执行
-        ```
-        
-        在这个例子中，防抖函数会在第一次调用后等待 1000ms 才会执行真正的 `hello` 函数，如果在这个 1000ms 内再次调用了 `debouncedHello` 函数，则会取消之前的延迟计时器，并重新开始新的延迟计时器。这种方法可以有效地防止由于多次调用导致的函数执行过于频繁。
-      </script>
     </zero-md>
     <script type="module" src="/src/main.ts"></script>
-    <script src="https://unpkg.com/commonmark@0.29.3/dist/commonmark.js"></script>
   </body>
 </html>
