@@ -71,7 +71,7 @@ function auto_grow() {
   <div id="main">
     <div id="header">
       <input type="text" v-model="token" :disabled="isLock"/> 
-      <button id="lock" @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secrty Key </button>
+      <button id="lock" @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secret Key </button>
       <span id="guide" v-show="!isLock"> <a href="https://platform.openai.com/account/api-keys"> how to get?</a></span>
     </div>
     <div id="chat" class="flex-center">
