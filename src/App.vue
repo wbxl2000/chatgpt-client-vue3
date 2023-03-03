@@ -7,6 +7,7 @@ import hljs from 'highlight.js';
 const question = ref<string>();
 const token = ref<string>("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");
 const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
+const areaElement = ref();
 
 watchEffect(() => {
   axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -43,6 +44,10 @@ function send() {
     });
 }
 
+function auto_grow() {
+  areaElement.value.style.height = "5px";
+  areaElement.value.style.height = (areaElement.value.scrollHeight) + "px";
+}
 
 </script>
 
@@ -53,15 +58,20 @@ function send() {
     </div>
     <div id="chat" class="flex-center">
       <div class="answer-area">
-        <div v-for="(message) in messages" v-bind:key="message">
-          <div v-if="message.role === 'system'" class="message assistant" v-html="message.content"> </div>
-          <div v-else-if="message.role === 'user'" class="message" v-html="message.content"> </div>
-          <div v-else-if="message.role === 'assistant'" class="message assistant" v-html="message.content"> </div>
-        </div>
+        <template v-for="(message) in messages" v-bind:key="message">
+          <div v-if="message.role === 'system'" class="message-container assistant">
+            <div v-html="message.content" class="message"></div>
+          </div>
+          <div v-else-if="message.role === 'user'" class="message-container"> 
+            <div v-html="message.content" class="message"></div>
+          </div>
+          <div v-else-if="message.role === 'assistant'" class="message-container assistant"> 
+            <div v-html="message.content" class="message"></div>
+          </div>
+        </template>
       </div>
       <div class="input-area">
-        <textarea v-model="question" @keydown.enter="send()">
-            </textarea>
+        <textarea ref="areaElement" v-model="question" @input="auto_grow()"> </textarea>
         <button @click="send()"> send </button>
       </div>
     </div>
@@ -72,6 +82,8 @@ function send() {
 .input-area {
   display: flex;
   align-items: center;
+  width: 800px;
+  height: auto;
   margin: 20px 0;
 }
 
@@ -82,9 +94,15 @@ function send() {
   width: 100%;
 }
 
-.message {
+.message-container {
   width: 100%;
-  padding: 50px 0;
+  padding: 50px 300px;
+  display: flex;
+  justify-content: center;
+}
+
+.message {
+  width: 800px;
 }
 
 input {
@@ -99,14 +117,18 @@ input {
 
 textarea {
   width: 750px;
-  height: 50px;
   border-radius: 5px;
   border: 1px silver solid;
+  padding: 8px;
+  resize: none;
+  scroll-padding-block: 8px;
+  min-height: 50px;
+  /* max-height: 100px; */
 }
 
 button {
   height: 50px;
-  margin: 10px;
+  margin-left: 10px;
   border-radius: 5px;
   border: 1px silver solid;
   transition: border linear 0.1s;
@@ -137,7 +159,6 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 300px;
   width: 100%;
 }
 
