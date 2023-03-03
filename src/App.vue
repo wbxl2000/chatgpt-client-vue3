@@ -14,6 +14,9 @@ onMounted(() => {
   axios.defaults.headers.post['Content-Type'] = 'application/json';
   token.value = localStorage.getItem("token") ?? "";
   isLock.value = localStorage.getItem("lock") === "locked" ? true : false;
+  if (isLock.value) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
+  }
 })
 
 function lock() {
@@ -67,13 +70,15 @@ function auto_grow() {
 <template>
   <div id="main">
     <div id="header">
-      <input type="text" v-model="token" :disabled="isLock"/> <button @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secrty Key</button>
+      <input type="text" v-model="token" :disabled="isLock"/> 
+      <button id="lock" @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secrty Key </button>
+      <span id="guide" v-show="!isLock"> <a href="https://platform.openai.com/account/api-keys"> how to get?</a></span>
     </div>
     <div id="chat" class="flex-center">
       <div class="answer-area">
         <template v-for="(message) in messages" v-bind:key="message">
           <div v-if="message.role === 'system'" class="message-container assistant">
-            <div v-html="message.content" class="message"></div>
+            <div v-html="'[preset] ' + message.content" class="message"></div>
           </div>
           <div v-else-if="message.role === 'user'" class="message-container"> 
             <div v-html="message.content" class="message"></div>
@@ -122,11 +127,20 @@ input {
   width: 400px;
 }
 
+#guide {
+  color: grey;
+  margin: 0 5px;
+}
+
+#lock {
+  margin-left: 5px;
+}
+
 #header {
   width: 100%;
   display: flex;
   justify-content: end;
-  margin-bottom: 5px;
+  padding: 5px;
 }
 
 textarea {
@@ -148,7 +162,7 @@ textarea {
   transition: border linear 0.1s;
 }
 
-button:hover {
+#send:hover {
   border: 1px rgb(118, 118, 118) solid;
 }
 
