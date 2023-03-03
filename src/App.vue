@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import axios from "axios";
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 
-const question = ref<string>("");
-const answer = ref<string>("empty");
+const question = ref<string>();
+const token = ref<string>("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");
+const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
 
-const AUTH_TOKEN = "Bearer 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";
-
-axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+watchEffect(() => {
+  axios.defaults.headers.post['Content-Type'] = 'application/json';
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
+});
 
 marked.setOptions({
   highlight: function (code) {
@@ -18,22 +19,23 @@ marked.setOptions({
   }
 });
 
-const messages = ref<any[]>([]);
-
 function send() {
-  const theQuestion = question.value;
-  messages.value.push(theQuestion);
+  messages.value.push({
+    role: "user",
+    content: question.value
+  });
   question.value = "";
   axios.post('https://api.openai.com/v1/chat/completions', {
     "model": "gpt-3.5-turbo",
-    "messages": [{ "role": "user", "content": theQuestion }]
+    "messages": messages.value
   })
     .then(function (response) {
-      answer.value = response.data.choices[0].message.content;
-      const html = marked.parse(answer.value);
-      messages.value.push(html);
+      const html = marked.parse(response.data.choices[0].message.content);
+      messages.value.push({
+        role: "assistant",
+        content: html
+      });
       console.log(response);
-      console.log(answer.value);
       console.log(html);
     })
     .catch(function (error) {
@@ -46,20 +48,21 @@ function send() {
 
 <template>
   <div id="main">
-    <div id="sidebar" v-if="false"> New Chat
-      <div></div>
+    <div id="header">
+      token <input type="text" v-model="token" />
     </div>
     <div id="chat" class="flex-center">
       <div class="answer-area">
-        <div v-for="(message, index) in messages" v-bind:key="message">
-          <div v-if="!(index%2)" class="message" v-html="message"> 
-          </div>
-          <div v-if="index%2" class="message ai-message" v-html="message"> 
-          </div>
+        <div v-for="(message) in messages" v-bind:key="message">
+          <div v-if="message.role === 'system'" class="message assistant" v-html="message.content"> </div>
+          <div v-else-if="message.role === 'user'" class="message" v-html="message.content"> </div>
+          <div v-else-if="message.role === 'assistant'" class="message assistant" v-html="message.content"> </div>
         </div>
       </div>
       <div class="input-area">
-        <input v-model="question"> <button @click="send()"> send</button>
+        <textarea v-model="question" @keydown.enter="send()">
+            </textarea>
+        <button @click="send()"> send </button>
       </div>
     </div>
   </div>
@@ -80,11 +83,21 @@ function send() {
 }
 
 .message {
-  width: 750px;
+  width: 100%;
   padding: 50px 0;
 }
 
 input {
+  width: 400px;
+}
+
+#header {
+  /* position: absolute;
+  right: 20px;
+  top: 20px; */
+}
+
+textarea {
   width: 750px;
   height: 50px;
   border-radius: 5px;
@@ -103,13 +116,14 @@ button:hover {
   border: 1px rgb(118, 118, 118) solid;
 }
 
-.ai-message {
+.assistant {
   background-color: #f6f6f7;
 }
 
 #main {
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
 #sidebar {
@@ -124,6 +138,7 @@ button:hover {
   flex-direction: column;
   align-items: center;
   padding: 0 300px;
+  width: 100%;
 }
 
 #answer {
