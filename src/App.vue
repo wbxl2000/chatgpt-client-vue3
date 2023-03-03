@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref } from "vue";
 import axios from "axios";
 import { marked } from 'marked';
 import hljs from 'highlight.js';
@@ -23,7 +23,7 @@ onMounted(() => {
 function lock() {
   isLock.value = !isLock.value;
   localStorage.setItem("lock", isLock.value ? "locked" : "unlocked");
-  if (isLock.value){
+  if (isLock.value) {
     localStorage.setItem("token", token.value);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
   } else {
@@ -71,8 +71,8 @@ function auto_grow() {
 <template>
   <div id="main">
     <div id="header">
-      <input type="text" v-model="token" :disabled="isLock"/> 
-      <button id="lock" @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secret Key </button>
+      <input type="text" v-model="token" :disabled="isLock" placeholder="Secret Key"/>
+      <button @click="lock()"> {{ isLock ? "Unlock" : "Lock" }} </button>
       <span id="guide" v-show="!isLock"> <a href="https://platform.openai.com/account/api-keys"> how to get?</a></span>
     </div>
     <div id="chat" class="flex-center">
@@ -81,17 +81,17 @@ function auto_grow() {
           <div v-if="message.role === 'system'" class="message-container assistant">
             <div v-html="'[preset] ' + message.content" class="message"></div>
           </div>
-          <div v-else-if="message.role === 'user'" class="message-container"> 
+          <div v-else-if="message.role === 'user'" class="message-container">
             <div v-html="message.content" class="message"></div>
           </div>
-          <div v-else-if="message.role === 'assistant'" class="message-container assistant"> 
+          <div v-else-if="message.role === 'assistant'" class="message-container assistant">
             <div v-html="message.content" class="message"></div>
           </div>
         </template>
       </div>
       <div class="input-area">
         <textarea ref="areaElement" v-model="question" @input="auto_grow()"> </textarea>
-        <button id="send" @click="send()"> send </button>
+        <button id="send" @click="send()" :disabled="!isLock"> send </button>
       </div>
     </div>
   </div>
@@ -200,5 +200,4 @@ textarea {
   display: flex;
   flex-direction: column;
 }
-
 </style>
