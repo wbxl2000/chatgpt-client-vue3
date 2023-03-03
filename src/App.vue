@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import axios from "axios";
 import { marked } from 'marked';
 import hljs from 'highlight.js';
@@ -8,11 +8,24 @@ const question = ref<string>();
 const token = ref<string>("");
 const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
 const areaElement = ref();
+const isLock = ref<boolean>(false);
 
-watchEffect(() => {
+onMounted(() => {
   axios.defaults.headers.post['Content-Type'] = 'application/json';
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
-});
+  token.value = localStorage.getItem("token") ?? "";
+  isLock.value = localStorage.getItem("lock") === "locked" ? true : false;
+})
+
+function lock() {
+  isLock.value = !isLock.value;
+  localStorage.setItem("lock", isLock.value ? "locked" : "unlocked");
+  if (isLock.value){
+    localStorage.setItem("token", token.value);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
+  } else {
+    axios.defaults.headers.common['Authorization'] = "";
+  }
+}
 
 marked.setOptions({
   highlight: function (code) {
@@ -40,7 +53,7 @@ function send() {
       console.log(html);
     })
     .catch(function (error) {
-      console.log(error);
+      alert(error);
     });
 }
 
@@ -54,7 +67,7 @@ function auto_grow() {
 <template>
   <div id="main">
     <div id="header">
-      token <input type="text" v-model="token" />
+      <input type="text" v-model="token" :disabled="isLock"/> <button @click="lock()"> {{ isLock ? "Unlock" : "Lock" }}  Secrty Key</button>
     </div>
     <div id="chat" class="flex-center">
       <div class="answer-area">
@@ -72,7 +85,7 @@ function auto_grow() {
       </div>
       <div class="input-area">
         <textarea ref="areaElement" v-model="question" @input="auto_grow()"> </textarea>
-        <button @click="send()"> send </button>
+        <button id="send" @click="send()"> send </button>
       </div>
     </div>
   </div>
@@ -110,9 +123,10 @@ input {
 }
 
 #header {
-  /* position: absolute;
-  right: 20px;
-  top: 20px; */
+  width: 100%;
+  display: flex;
+  justify-content: end;
+  margin-bottom: 5px;
 }
 
 textarea {
@@ -126,7 +140,7 @@ textarea {
   /* max-height: 100px; */
 }
 
-button {
+#send {
   height: 50px;
   margin-left: 10px;
   border-radius: 5px;
@@ -171,4 +185,5 @@ button:hover {
   display: flex;
   flex-direction: column;
 }
+
 </style>
