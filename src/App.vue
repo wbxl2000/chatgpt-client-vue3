@@ -5,7 +5,7 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 
 const question = ref<string>();
-const token = ref<string>("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");
+const token = ref<string>("");
 const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
 const areaElement = ref();
 
