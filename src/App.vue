@@ -6,7 +6,8 @@ import hljs from 'highlight.js';
 
 const question = ref<string>();
 const token = ref<string>("");
-const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
+// const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
+const messages = ref<any[]>([]);
 const areaElement = ref();
 const isLock = ref<boolean>(false);
 
