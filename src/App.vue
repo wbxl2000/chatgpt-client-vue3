@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import axios from "axios";
 import { marked } from 'marked';
-import hljs from 'highlight.js';
+import axios from "axios";
 
 const question = ref<string>();
 const token = ref<string>("");
-// const messages = ref<any[]>([{ "role": "system", "content": "You are a helpful assistant." }]);
 const messages = ref<any[]>([]);
 const areaElement = ref();
 const isLock = ref<boolean>(false);
@@ -31,37 +29,29 @@ function lock() {
   }
 }
 
-marked.setOptions({
-  highlight: function (code) {
-    return hljs.highlightAuto(code).value;
-  }
-});
-
-function send() {
+async function send() {
   messages.value.push({
     role: "user",
     content: question.value
   });
   question.value = "";
-  axios.post('https://api.openai.com/v1/chat/completions', {
-    "model": "gpt-3.5-turbo",
-    "messages": messages.value
-  })
-    .then(function (response) {
-      const html = marked.parse(response.data.choices[0].message.content);
-      messages.value.push({
-        role: "assistant",
-        content: html
-      });
-      console.log(response);
-      console.log(html);
-    })
-    .catch(function (error) {
-      alert(error);
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      "model": "gpt-3.5-turbo",
+      "messages": messages.value
     });
+    const html = marked.parse(response.data.choices[0].message.content);
+    messages.value.push({
+      role: "assistant",
+      content: html
+    });
+    console.log("debug", response, html);
+  } catch (error) {
+    alert(error);
+  }
 }
 
-function auto_grow() {
+function autoGrow() {
   areaElement.value.style.height = "5px";
   areaElement.value.style.height = (areaElement.value.scrollHeight) + "px";
 }
@@ -71,7 +61,7 @@ function auto_grow() {
 <template>
   <div id="main">
     <div id="header">
-      <input type="text" v-model="token" :disabled="isLock" placeholder="Secret Key"/>
+      <input type="text" v-model="token" :disabled="isLock" placeholder="Secret Key" />
       <button @click="lock()"> {{ isLock ? "Unlock" : "Lock" }} </button>
       <span id="guide" v-show="!isLock"> <a href="https://platform.openai.com/account/api-keys"> how to get?</a></span>
     </div>
@@ -90,7 +80,7 @@ function auto_grow() {
         </template>
       </div>
       <div class="input-area">
-        <textarea ref="areaElement" v-model="question" @input="auto_grow()"> </textarea>
+        <textarea ref="areaElement" v-model="question" @input="autoGrow()"> </textarea>
         <button id="send" @click="send()" :disabled="!isLock"> send </button>
       </div>
     </div>
